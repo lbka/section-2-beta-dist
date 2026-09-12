@@ -1,7 +1,7 @@
 // Service worker de SECTION-2 (nouvelle appli). Repris de l'ancien sw.js :
 // cache léger de la coquille, jamais des appels Supabase, et réception des
 // notifications push.
-const CACHE_NAME = "section-2-app-shell-v1";
+const CACHE_NAME = "section-2-app-shell-beta-3";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(["/", "/manifest.webmanifest"])).then(() => self.skipWaiting()));
@@ -10,7 +10,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('section-2-app-shell-') && k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -28,11 +28,13 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request, { cache: "no-store" })
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put("/", copy));
+          if (response.ok) {
+            const copy = response.clone();
+            event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put("/", copy)));
+          }
           return response;
         })
-        .catch(() => caches.match("/")),
+        .catch(async () => (await caches.match("/")) || new Response('Connexion indisponible. Réessaie quand le réseau revient.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })),
     );
     return;
   }
@@ -59,7 +61,7 @@ self.addEventListener("push", (event) => {
   let data = {};
   try {
     data = event.data ? event.data.json() : {};
-  } catch (e) {
+  } catch {
     data = { title: "SECTION 2", body: event.data ? event.data.text() : "Nouvelle notification" };
   }
   const title = data.title || "SECTION 2";
