@@ -1,6 +1,6 @@
 {
-  "name": "SECTION-2 (bêta)",
-  "short_name": "S2 bêta",
+  "name": "MyCardGame",
+  "short_name": "MyCardGame",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#05060a",

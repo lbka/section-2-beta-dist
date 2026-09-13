@@ -1,7 +1,7 @@
-// Service worker de SECTION-2 (nouvelle appli). Repris de l'ancien sw.js :
+// Service worker de MyCardGame. Repris de l'ancien sw.js :
 // cache léger de la coquille, jamais des appels Supabase, et réception des
 // notifications push.
-const CACHE_NAME = "section-2-app-shell-beta-3";
+const CACHE_NAME = "mycardgame-shell-1";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(["/", "/manifest.webmanifest"])).then(() => self.skipWaiting()));
@@ -10,7 +10,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('section-2-app-shell-') && k !== CACHE_NAME).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => (k.startsWith('section-2-app-shell-') || k.startsWith('mycardgame-shell-')) && k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   );
 });
@@ -64,7 +64,7 @@ self.addEventListener("push", (event) => {
   } catch {
     data = { title: "SECTION 2", body: event.data ? event.data.text() : "Nouvelle notification" };
   }
-  const title = data.title || "SECTION 2";
+  const title = data.title || "MyCardGame";
   const options = {
     body: data.body || "Tu as une nouvelle notification.",
     icon: "/icon-192.png",
